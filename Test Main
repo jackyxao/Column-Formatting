@@ -1,0 +1,450 @@
+// The "Columnize" class.
+//Author: Jacky Xao
+//Date: October 13 2014
+//Purpose: Formats text into columns
+import java.awt.*;
+import hsa.Console;
+import hsa.*;
+
+public class Columnize
+{
+    static Console c;           // The output console
+    
+    public static void main (String[] args)
+    {
+	c = new Console (45,100);
+	boolean again = true;
+	while (again)
+	    {
+	    String yn;
+	    
+	    String input;
+	    String output;
+	    int size;
+	    int columns;
+	    char just;
+	    char write;
+	    ModifyString text;
+	    
+	    input = readFile();
+	    
+	    c.print("Enter the width of the column. (20 - 50): ");
+	    size = c.readInt();
+	    while (size < 20 || size > 50)
+		{
+		c.print("Width between 20 and 50 only: ");
+		size = c.readInt();
+		}
+		
+	    c.print("\nEnter the number of the columns. (1 - 4): ");
+	    columns = c.readInt();
+	    while (columns < 1 || columns > 4)
+		{
+		c.print("Columns between 1 and 4 only: ");
+		columns = c.readInt();
+		}
+		
+	    c.println("\nEnter the justification. (Hit any character key)");
+	    c.print("'l'eft, 'r'ight, 'c'entre, 'f'ull: ");
+	    just = Character.toLowerCase(c.getChar());
+	    c.println(just);
+	    while (just != 'l' && just != 'r' && just != 'c' && just != 'f')
+		{
+		c.print("Characters of 'l','r','c','f' only: ");
+		just = Character.toLowerCase(c.getChar());
+		c.println(just);
+		}
+	    
+	    text = new ModifyString(input,size);
+	    if (just == 'l')
+		{
+		c.println("You chose left justification.");
+		text.justifyLeft();
+		}
+	    else if (just == 'r')
+		{
+		c.println("You chose right justification.");
+		text.justifyRight();
+		}
+	    else if (just == 'c')
+		{
+		c.println("You chose centre justification.");
+		text.justifyCentre();
+		}
+	    else
+		{
+		c.println("You chose full justification.");
+		text.justifyFull();
+		}
+		
+	    output = text.splitColumn(columns);
+	    c.println("\n"+output);
+	    c.print("Do you want to write this? y/n?: ");
+	    write = Character.toLowerCase(c.getChar());
+	    c.println(write);
+	    while (write != 'y' && write != 'n')
+		{
+		c.print("y/n only: ");
+		write = Character.toLowerCase(c.getChar());
+		c.println(write);
+		}
+	    
+	    if (write == 'y')
+		writeFile(output);
+	
+	    c.print("Do you want to modify another text? 'y' for yes, 'n' for no: ");
+	    yn = c.readLine();
+	    while ((! yn.equalsIgnoreCase("y")) && (! yn.equalsIgnoreCase("n")))
+		{
+		c.print("y and n only: ");
+		yn = c.readLine();
+		}
+	    if (yn.equalsIgnoreCase("n"))
+		{
+		again = false;
+		c.println("Good bye");
+		}
+	    else
+		c.clear();
+	    }
+	// Place your program here.  'c' is the output console
+    } // main method
+    
+    public static String readFile()
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: reads a txt file and converts it into a string
+      Input: 
+      Output: the convert text */
+	{
+	String fileName;
+	String inputFile = "";
+	TextInputFile input;
+	
+	c.print("Enter the file name you wish to input: ");
+	fileName = c.readLine();
+	if (fileName.indexOf(".txt") == -1)
+	    fileName = fileName + ".txt";
+	    
+	input = new TextInputFile(fileName);
+	while (!input.eof()) 
+	    inputFile = inputFile + input.readLine().trim()+" ";
+	input.close();
+	
+	return inputFile;
+	}
+	
+    public static void writeFile(String output)
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: writes a string to a txt file
+      Input: the string for output
+      Output: N/A but outputs the string in a  txt file*/
+	{
+	String fileName;
+	TextOutputFile outputFile;
+	
+	c.print("Enter the file name: ");
+	fileName = c.readLine();
+	if (fileName.indexOf(".txt") == -1)
+	    fileName = fileName + ".txt";
+	    
+	outputFile = new TextOutputFile(fileName);
+	outputFile.print(output);
+	outputFile.close();
+	
+	c.println("File written.");
+	}
+} // Columnize class
+
+/*
+-----Class ModifyString-----
+Author: Jacky Xao
+Date: October 13 2014
+Purpose: Modifies the justification and column formatting of a string
+---Fields---
+    wordList: a string array of words
+    rows: a string array of the rows of the main text
+    text: the main string/ text input
+    width: the width of a column, a.k.a. the length of a row
+    wordCount: word counter
+    rowCount: row counter
+---Methods---
+    constructor
+    toString: 
+    getWords: creates the wordList
+    justifyLeft: justifies the text to the left
+    justifyRight: justifies the text to the right
+    justifyCentre: justifies the text to the centre
+    justifyFull: justifies the text to fill up the entire width evenly
+    splitColumn: splits the single rows into side by side columns
+    fill: fills up the rows with spaces to the width
+*/
+class ModifyString
+    {
+    protected String [] wordList;
+    protected String [] rows;
+    protected String text;
+    protected int width;
+    protected int wordCount;
+    protected int rowCount;
+    
+    public ModifyString(String text,int width)
+	{
+	this.wordList = new String [1];
+	this.wordCount = 1;
+	this.rows = new String [1];
+	this.rowCount = 1;
+	this.text = text;
+	this.width = width;
+	this.getWords();
+	}
+	
+    public ModifyString(String text)
+	{
+	this(text,35);
+	}
+	
+    public String toString() //WAIT.
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: converts the r
+      Input: 
+      Output: */
+	{
+	String text = this.rows[0];
+	for (int i = 1; i < this.rowCount; i++)
+	    text = text + "\n" + this.rows[i];
+	return text;
+	}
+	
+    public void getWords()
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: creates the wordList
+      Input:  N/A
+      Output: N/A */
+    {
+	String temp = this.text.trim();
+	String word = "";
+	int index = temp.indexOf(" ");
+	int count = 0;
+	
+	while (index != -1)
+	    {
+	    if (temp.substring(0,index).length() > this.width)
+		{
+		count++;
+		temp = temp.substring(this.width-1);
+		}
+	    else
+		{
+		count++;
+		temp = temp.substring(index+1).trim();
+		}
+	    index = temp.indexOf(" ");
+	    }
+	    
+	this.wordCount = count + 1;
+	temp = this.text.trim();
+	this.wordList = new String[this.wordCount];
+	count = 0;
+	index = temp.indexOf(" ");
+	
+	while (index != -1)
+	    {
+	    word = temp.substring(0,index);
+	    
+	    if (word.length() > this.width)
+		{
+		word = temp.substring(0,this.width-1) + "-";
+		temp = temp.substring(this.width-1);
+		}
+	    else
+		temp = temp.substring(index+1).trim();
+		
+	    this.wordList[count] = word;
+	    count++;
+	    index = temp.indexOf(" ");
+	    }
+	this.wordList[count] = temp;
+	}
+	
+    public void justifyLeft()
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: justifies the text to the left
+      Input: N/A
+      Output: N/A */
+	{
+	String line = "";
+	String word;
+	String [] old;
+	int index = 0;
+	int length = (2*this.text.length())/this.width + 1;
+	
+	this.rows = new String [length];
+	
+	for (int count = 0; count < this.wordCount; count++)
+	    {
+	    word = this.wordList[count];
+	    if (line.length() == 0)
+		line = word;
+	    else if ((line.length() + word.length() + 1) <= this.width)
+		line = line + " " + word;
+	    else
+		{
+		this.rows[index] = line;
+		line = word;
+		index++;
+		}
+	    }
+
+	this.rows[index] = line;
+	this.rowCount = index + 1;
+	
+	if (length > index)
+	    {
+	    old = this.rows;
+	    this.rows = new String [this.rowCount];
+	    for (int i = 0; i < this.rowCount; i++)
+		this.rows[i] = old[i];
+	    }
+	}
+    public void justifyRight()
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: justifies the text to the right
+      Input: N/A
+      Output: N/A */
+	{
+	this.justifyLeft();
+	for (int i = 0; i < this.rowCount; i++)
+	    while (this.rows[i].length() < this.width)
+		this.rows[i] = " " + this.rows[i];
+	}
+	
+    public void justifyCentre()
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: justifies the text to the centre
+      Input: N/A
+      Output: N/A*/
+	{
+	this.justifyLeft();
+	for (int i = 0; i < this.rowCount; i++)
+	    while (this.rows[i].length() < this.width)
+		{
+		this.rows[i] = " " + this.rows[i];
+		if (this.rows[i].length() < this.width)
+		    this.rows[i] = this.rows[i] + " ";
+		}
+	}
+	
+    public void justifyFull()
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: justifies the text to fill up the entire width evenly
+      Input: N/A
+      Output: N/A */
+	{
+	int count;
+	int intSpace;
+	int spaceCount; 
+	int extraSpaceCount;
+	int spaces;
+	int index;
+
+	String space;
+	String full;
+	String line;
+	String word;
+	this.justifyLeft();
+	
+	for (count = 0; count < this.rowCount; count++)
+	    {
+	    line = this.rows[count].trim();
+	    intSpace = this.width - line.length();
+	    spaces = 0;
+	    full = "";
+	    index = line.indexOf(" ");
+	    while (index != -1)
+		{
+		line = line.substring(index+1);
+		spaces++;
+		index = line.indexOf(" ");                
+		}
+	    if (spaces > 0)
+		{
+		spaceCount = intSpace / spaces;
+		extraSpaceCount = intSpace % spaces;
+		space = " ";
+		for (int i = 0; i < spaceCount; i++)
+		    space = space + " ";
+		line = this.rows[count];
+		index = line.indexOf(" ");  
+		while (index != -1)
+		    {
+		    word = line.substring(0,index);
+		    line = line.substring(index+1);
+		    full = full + word + space;
+		    if (extraSpaceCount > 0)
+			{
+			full = full + " ";
+			extraSpaceCount--;
+			}
+		    index = line.indexOf(" ");
+		    }
+		full = full + line;
+		this.rows[count] = full;
+		}
+	    else
+		{
+		full = this.rows[count];
+		while (full.length() < this.width)
+		    full = full + " ";
+		this.rows[count] = full;
+		}
+	    }
+	}
+	
+    public String splitColumn(int column)
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: splits the single rows into side by side columns
+      Input: number of rows
+      Output: the multiple columns in a single string*/
+	{
+	this.fill();
+	int offset = this.rowCount / column;
+	if (this.rowCount % column != 0)
+	    offset++;
+	int temp;
+	String line = "";
+	
+	for (int i = 0; i < offset; i++)
+	    {
+	    line = line + this.rows[i];
+	    temp = i + offset;
+	    while (temp < this.rowCount)
+		{
+		line = line + "     "+this.rows[temp];
+		temp = temp + offset;
+		}
+	    line = line + "\n";
+	    }
+	return line;
+	}
+	
+    public void fill()
+    /*Author: Jacky Xao
+      Date: October 13 2014
+      Purpose: fills up the rows with spaces to the width
+      Input: N/A
+      Output: N/A */
+	{
+	for (int i = 0; i < this.rowCount; i++)
+	    while (this.rows[i].length() < this.width)
+		this.rows[i] = this.rows[i] + " ";
+	}
+    }
